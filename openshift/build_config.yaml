@@ -15,7 +15,7 @@ metadata:
     template.openshift.io/provider-display-name: Fridolin Pokorny
 
 objects:
-- apiVersion: v1
+- apiVersion: build.openshift.io/v1
   kind: BuildConfig
   metadata:
     name: worker
