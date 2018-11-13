@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0473b2f890f440ae4cc59c5b4230bf82223729be4b974ab32465a3672f03bf49"
+            "sha256": "cc07156d99fcee7d35154e27f542bff27e6ca61997e2f8ae1af822ad12f7e515"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -65,10 +65,6 @@
                 "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"
             ],
             "version": "==3.0.4"
-        },
-        "demo-worker": {
-            "git": "https://github.com/fridex/thoth-selinon-worker.git",
-            "ref": "15ecbb3249a5b9da5dc542e9ac32bbc24c19c7cf"
         },
         "docutils": {
             "hashes": [

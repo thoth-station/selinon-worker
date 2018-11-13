@@ -12,7 +12,6 @@ sqlalchemy = "*"
 sqlalchemy-utils = "*"
 redis = "*"
 "boto3" = "*"
-demo-worker = {git = "https://github.com/fridex/thoth-selinon-worker.git"}
 
 [dev-packages]
 
