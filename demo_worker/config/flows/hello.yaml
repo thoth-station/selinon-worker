@@ -1,0 +1,8 @@
+---
+  flow-definitions:
+    - name: sync_flow
+      queue: sync_flow
+      sampling:
+      edges:
+        - from:
+          to: GraphSyncTask

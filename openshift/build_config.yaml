@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: worker-buildconfig
+  selinon: 1.0.0
+metadata:
+  name: worker-buildconfig
+  annotations:
+    description: 
+    openshift.io/display-name: 'Selinon: worker BuildConfig'
+    version: 1.0.0
+    tags: poc,selinon,worker
+    template.openshift.io/documentation-url: https://github.com/selinon/
+    template.openshift.io/long-description: Selinon worker buildconfig template.
+    template.openshift.io/provider-display-name: Fridolin Pokorny
+
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: worker
+    labels:
+      app: selinon
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "worker:${IMAGE_STREAM_TAG}"
+    source:
+      type: Git
+      git:
+        uri: ${GITHUB_URL}
+        ref: ${GITHUB_REF}
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: python-36-centos7:latest
+        env:
+          - name: ENABLE_PIPENV
+            value: '1'
+          - name: UPGRADE_PIP_TO_LATEST
+            value: '1'
+    triggers:
+    - type: ImageChange
+      imageChange: {}
+
+parameters:
+- description: Name of the github repository for Selinon worker
+  displayName: Git Repository
+  required: true
+  name: GITHUB_URL
+  value: 'https://github.com/selinon/demo-worker'
+
+- description: Git reference to be used for Selinon worker
+  displayName: Git Reference
+  required: true
+  name: GITHUB_REF
+  value: 'master'
+
+- description: Tag of the output ImageStream the resulting container image should go to
+  displayName: ImageStream Tag
+  required: true
+  name: IMAGE_STREAM_TAG
+  value: 'latest'

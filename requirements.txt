@@ -1,0 +1,1 @@
+selinon[celery,mongodb,postgresql,redis]
