@@ -11,21 +11,21 @@ def get_requirements():
 
 
 def get_version():
-    with open(os.path.join('demo_worker', '__init__.py')) as f:
+    with open(os.path.join('thoth_worker', '__init__.py')) as f:
         for line in f.readlines():
             if line.startswith('__version__ = '):
                 version = line[len('__version__ = "'):-2]
                 return version
 
-    raise ValueError("No version information found in 'demo_worker/__init__.py'")
+    raise ValueError("No version information found in 'thoth_worker/__init__.py'")
 
 
 setup(
-    name='demo-worker',
+    name='thoth-worker',
     version=get_version(),
     packages=find_packages(),
     package_data={
-        'demo_worker': [
+        'thoth_worker': [
             os.path.join('config', '*.yaml'),
             os.path.join('config', '*.yml'),
             os.path.join('config', 'flows', '*.yaml'),
@@ -39,10 +39,10 @@ setup(
     author_email='fridolin.pokorny@gmail.com',
     maintainer='Fridolin Pokorny',
     maintainer_email='fridolin.pokorny@gmail.com',
-    description='Selinon demo example application',
+    description='Selinon thoth example application',
     license='MIT',
     keywords='selinon celery',
-    url='https://github.com/selinon/demo-worker',
+    url='https://github.com/fridex/thoth-selinon-worker',
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",

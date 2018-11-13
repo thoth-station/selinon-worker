@@ -2,7 +2,7 @@
   tasks:
     - name: GraphSyncTask
       queue: sync_task
-      import: demo_worker.tasks
+      import: thoth_worker.tasks
       max_retry: 0
 
   flows:

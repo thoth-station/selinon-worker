@@ -5,7 +5,7 @@
 # This file is part of Selinon project.
 # ######################################################################
 
-from demo_worker import init
+from thoth_worker import init
 
 # Entrypoint for Celery worker
 app = init(with_result_backend=True)

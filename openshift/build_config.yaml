@@ -51,7 +51,7 @@ parameters:
   displayName: Git Repository
   required: true
   name: GITHUB_URL
-  value: 'https://github.com/selinon/demo-worker'
+  value: 'https://github.com/fridex/thoth-selinon-worker'
 
 - description: Git reference to be used for Selinon worker
   displayName: Git Reference
