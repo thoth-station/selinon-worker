@@ -15,7 +15,7 @@ metadata:
     template.openshift.io/provider-display-name: Fridolin Pokorny
 
 objects:
-- apiVersion: v1
+- apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
     labels:
