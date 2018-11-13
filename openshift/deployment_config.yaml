@@ -34,11 +34,6 @@ objects:
         - env:
           - name: SELINON_DISPATCHER
             value: ${SELINON_DISPATCHER}
-          - name: TRAVIS_CI_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: selinon
-                key: travis-ci-token
           - name: BROKER_URL
             valueFrom:
               configMapKeyRef:
