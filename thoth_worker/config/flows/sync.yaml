@@ -16,7 +16,7 @@
       queue: do_sync_flow
       edges:
         - from:
-          to: SyncResultSolverTask
+          to: GraphSyncSolverTask
           condition: &isSolver
             name: argsFieldEqual
             args:
@@ -24,7 +24,7 @@
               value: True
 
         - from:
-          to: SyncResultAnalysisTask
+          to: GraphSyncAnalysisTask
           condition:
             not:
               <<: *isSolver
