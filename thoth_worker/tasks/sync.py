@@ -16,11 +16,15 @@ class SyncListingTask(SelinonTask):
         result = []
 
         solver_store = SolverResultsStore()
+        solver_store.connect()
+
         _LOGGER.info("Retrieving solver documents")
         for document_id in solver_store.get_document_listing():
             result.append({'document_id': document_id, 'solver': True})
 
         analysis_store = AnalysisResultsStore()
+        analysis_store.connect()
+
         _LOGGER.info("Retrieving analysis documents")
         for document_id in analysis_store.get_document_listing():
             result.append({'document_id': document_id, 'solver': False})
@@ -36,6 +40,7 @@ class GraphSyncSolverTask(SelinonTask):
         graph.connect()
 
         solver_store = SolverResultsStore()
+        solver_store.connecT()
 
         _LOGGER.info("Retrieving solver document with id %r", document_id)
         solver_document = solver_store.retrieve_document(document_id)
@@ -53,6 +58,7 @@ class GraphSyncAnalysisTask(SelinonTask):
         graph.connect()
 
         analysis_store = AnalysisResultsStore()
+        analysis_store.connect()
 
         _LOGGER.info("Retrieving analysis document with id %r", document_id)
         analysis_document = analysis_store.retrieve_document(document_id)
