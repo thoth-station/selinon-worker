@@ -40,7 +40,7 @@ class GraphSyncSolverTask(SelinonTask):
         graph.connect()
 
         solver_store = SolverResultsStore()
-        solver_store.connecT()
+        solver_store.connect()
 
         _LOGGER.info("Retrieving solver document with id %r", document_id)
         solver_document = solver_store.retrieve_document(document_id)
