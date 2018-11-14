@@ -1,11 +1,30 @@
 ---
   tasks:
-    - name: GraphSyncTask
-      queue: sync_task
+    - name: SyncListingTask
+      queue: sync_listing_task
+      import: thoth_worker.tasks
+      max_retry: 0
+      storage: Redis
+
+    - name: SyncResultSolverTask
+      queue: sync_result_solver_task
+      import: thoth_worker.tasks
+      max_retry: 0
+
+    - name: SyncResultAnalysisTask
+      queue: sync_result_analysis_task
       import: thoth_worker.tasks
       max_retry: 0
 
   flows:
     - sync_flow
+    - _do_sync_flow
 
-  storages: []
+  storages:
+    - name: Redis
+      import: selinon.storages.redis
+      configuration:
+        host: redis
+        port: 6379
+        db: 1
+        charset: 'utf-8'

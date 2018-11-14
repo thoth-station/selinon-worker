@@ -1,0 +1,30 @@
+---
+  flow-definitions:
+    - name: sync_flow
+      queue: sync_flow
+      edges:
+        - from:
+          to: SyncListingTask
+        - from: SyncListingTask
+          to: _do_sync_flow
+          foreach:
+            function: iter_sync_documents
+            import: thoth_worker.foreach
+            propagate_result: true
+
+    - name: _do_sync_flow
+      queue: do_sync_flow
+      edges:
+        - from:
+          to: SyncResultSolverTask
+          condition: &isSolver
+            name: fieldEqual
+            args:
+              key: 'solver'
+              value: True
+
+        - from:
+          to: SyncResultAnalysisTask
+          condition:
+            not:
+              <<: *isSolver
