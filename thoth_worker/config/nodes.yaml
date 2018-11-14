@@ -6,12 +6,12 @@
       max_retry: 0
       storage: Redis
 
-    - name: SyncResultSolverTask
+    - name: GraphSyncSolverTask
       queue: sync_result_solver_task
       import: thoth_worker.tasks
       max_retry: 0
 
-    - name: SyncResultAnalysisTask
+    - name: GraphSyncAnalysisTask
       queue: sync_result_analysis_task
       import: thoth_worker.tasks
       max_retry: 0
