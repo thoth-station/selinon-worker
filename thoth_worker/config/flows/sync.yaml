@@ -14,6 +14,9 @@
 
     - name: _do_sync_flow
       queue: do_sync_flow
+      nowait:
+        - GraphSyncSolverTask
+        - GraphSyncAnalysisTask
       edges:
         - from:
           to: GraphSyncSolverTask
