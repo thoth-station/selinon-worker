@@ -18,7 +18,7 @@
         - from:
           to: SyncResultSolverTask
           condition: &isSolver
-            name: fieldEqual
+            name: argsFieldEqual
             args:
               key: 'solver'
               value: True
