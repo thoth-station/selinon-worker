@@ -33,7 +33,7 @@ PYPI = Source(url="https://pypi.org/simple")
 
 class PyPIListingTask(SelinonTask):
     def run(self, node_args):
-        return [{"package_name": package_name} for package_name in PYPI.get_packages()][:2]
+        return [{"package_name": package_name} for package_name in PYPI.get_packages()]
 
 
 class ProjectInfoTask(SelinonTask):
