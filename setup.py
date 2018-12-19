@@ -23,7 +23,10 @@ def get_version():
 setup(
     name='thoth-worker',
     version=get_version(),
-    packages=find_packages(),
+    packages=[
+        'thoth.worker',
+        'thoth.worker.tasks',
+    ],
     package_data={
         'thoth.worker': [
             os.path.join('config', '*.yaml'),
@@ -43,6 +46,7 @@ setup(
     license='MIT',
     keywords='selinon celery',
     url='https://github.com/fridex/thoth-selinon-worker',
+    zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
