@@ -15,6 +15,7 @@
     - name: pypi_project
       queue: pypi_project_flow
       nowait:
+        - ProjectInfoTask
       edges:
         - from:
-          to: DownloadProjectInfoTask
+          to: ProjectInfoTask
