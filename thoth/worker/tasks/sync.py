@@ -49,7 +49,6 @@ class GraphSyncSolverTask(SelinonTask):
         graph.sync_solver_result(solver_document)
 
 
-
 class GraphSyncAnalysisTask(SelinonTask):
     def run(self, node_args):
         document_id = node_args['document_id']

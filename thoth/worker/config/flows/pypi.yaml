@@ -1,0 +1,20 @@
+---
+  flow-definitions:
+    - name: pypi
+      queue: pypi_flow
+      edges:
+        - from:
+          to: PyPIListingTask
+        - from: PyPIListingTask
+          to: pypi_project
+          foreach:
+            function: iter_pypi_projects
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: pypi_project
+      queue: pypi_project_flow
+      nowait:
+      edges:
+        - from:
+          to: DownloadProjectInfoTask
