@@ -9,7 +9,7 @@
           to: _do_sync_flow
           foreach:
             function: iter_sync_documents
-            import: thoth_worker.foreach
+            import: thoth.worker.foreach
             propagate_result: true
 
     - name: _do_sync_flow

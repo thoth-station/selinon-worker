@@ -7,7 +7,7 @@ import logging
 from celery.bin.celery import main as celery_main
 from selinon import Config
 
-from thoth_worker import get_config_files
+from thoth.worker import get_config_files
 
 _LOGGER = logging.getLogger(__name__)
 

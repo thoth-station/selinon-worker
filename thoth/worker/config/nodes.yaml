@@ -2,23 +2,37 @@
   tasks:
     - name: SyncListingTask
       queue: sync_listing_task
-      import: thoth_worker.tasks
+      import: thoth.worker.tasks
       max_retry: 0
       storage: Redis
 
     - name: GraphSyncSolverTask
       queue: sync_result_solver_task
-      import: thoth_worker.tasks
+      import: thoth.worker.tasks
       max_retry: 0
 
     - name: GraphSyncAnalysisTask
       queue: sync_result_analysis_task
-      import: thoth_worker.tasks
+      import: thoth.worker.tasks
       max_retry: 0
+
+    - name: PyPIListingTask
+      queue: pypi_listing_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: Redis
+
+    - name: DownloadProjectInfoTask
+      queue: download_project_info_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: ProjectInfoStore
 
   flows:
     - sync_flow
     - _do_sync_flow
+    - pypi
+    - pypi_project
 
   storages:
     - name: Redis
@@ -28,3 +42,10 @@
         port: 6379
         db: 1
         charset: 'utf-8'
+    - name: ProjectInfoStore
+      import: thoth.worker.storages
+      configuration:
+        bucket: {THOTH_CEPH_BUCKET}
+        prefix: {THOTH_CEPH_BUCKET_PREFIX}
+        aws_access_key_id: {THOTH_CEPH_KEY_ID}
+        aws_secret_access_key: {THOTH_CEPH_SECRET_KEY}

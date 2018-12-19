@@ -4,15 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-selinon = {git = "https://github.com/selinon/selinon"}
-requests = "*"
-celery = ">=4"
+selinon = "*"
 pymongo = "*"
-sqlalchemy = "*"
-sqlalchemy-utils = "*"
 redis = "*"
-"boto3" = "*"
 thoth-storages = "*"
+thoth-python = "*"
 
 [dev-packages]
 
