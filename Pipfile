@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 selinon = "*"
-pymongo = "*"
 redis = "*"
 thoth-storages = "*"
 thoth-python = "*"
@@ -14,3 +13,4 @@ thoth-python = "*"
 
 [requires]
 python_version = "3.6"
+

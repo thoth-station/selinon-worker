@@ -1,1 +1,3 @@
-selinon[celery,mongodb,postgresql,redis]
+selinon[celery,redis]
+thoth-storages
+thoth-python
