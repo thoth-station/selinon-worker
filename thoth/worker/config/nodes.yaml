@@ -22,7 +22,7 @@
       max_retry: 0
       storage: Redis
 
-    - name: DownloadProjectInfoTask
+    - name: ProjectInfoTask
       queue: download_project_info_task
       import: thoth.worker.tasks
       max_retry: 0
@@ -45,7 +45,12 @@
     - name: ProjectInfoStore
       import: thoth.worker.storages
       configuration:
-        bucket: {THOTH_CEPH_BUCKET}
-        prefix: {THOTH_CEPH_BUCKET_PREFIX}
-        aws_access_key_id: {THOTH_CEPH_KEY_ID}
-        aws_secret_access_key: {THOTH_CEPH_SECRET_KEY}
+        bucket: '{THOTH_CEPH_BUCKET}'
+        prefix: '{THOTH_CEPH_BUCKET_PREFIX}'
+        aws_access_key_id: '{THOTH_CEPH_KEY_ID}'
+        aws_secret_access_key: '{THOTH_CEPH_SECRET_KEY}'
+        s3_endpoint: '{THOTH_S3_ENDPOINT_URL}'
+
+  global:
+    trace:
+      - logging: true

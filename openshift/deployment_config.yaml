@@ -32,6 +32,16 @@ objects:
       spec:
         containers:
         - env:
+          - name: THOTH_CEPH_BUCKET
+            value: ${THOTH_CEPH_BUCKET}
+          - name: THOTH_CEPH_BUCKET_PREFIX
+            value: ${THOTH_CEPH_BUCKET_PREFIX}
+          - name: THOTH_CEPH_KEY_ID
+            value: ${THOTH_CEPH_KEY_ID}
+          - name: THOTH_CEPH_SECRET_KEY
+            value: ${THOTH_CEPH_SECRET_KEY}
+          - name: THOTH_S3_ENDPOINT_URL
+            value: ${THOTH_S3_ENDPOINT_URL}
           - name: SELINON_DISPATCHER
             value: ${SELINON_DISPATCHER}
           - name: BROKER_URL
@@ -78,3 +88,27 @@ parameters:
   required: true
   name: SELINON_DISPATCHER
 
+- description: Ceph bucket to be used.
+  displayName: Ceph bucket name
+  required: true
+  name: THOTH_CEPH_BUCKET
+
+- description: Ceph bucket prefix.
+  displayName: Ceph bucket prefix
+  required: true
+  name: THOTH_CEPH_BUCKET_PREFIX
+
+- description: Ceph key id to be used.
+  displayName: Ceph key id
+  required: true
+  name: THOTH_CEPH_KEY_ID
+
+- description: Secret key to be used to Ceph.
+  displayName: Ceph secret key
+  required: true
+  name: THOTH_CEPH_SECRET_KEY
+
+- description: S3 endpoint used for communicating with Ceph.
+  displayName: S3 endpoint
+  required: true
+  name: THOTH_S3_ENDPOINT_URL

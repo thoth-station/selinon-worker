@@ -45,7 +45,7 @@ setup(
     description='Selinon thoth example application',
     license='MIT',
     keywords='selinon celery',
-    url='https://github.com/fridex/thoth-selinon-worker',
+    url='https://github.com/thoth-station/selinon-worker',
     zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 3",

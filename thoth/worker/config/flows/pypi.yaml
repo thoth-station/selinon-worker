@@ -17,4 +17,4 @@
       nowait:
       edges:
         - from:
-          to: DownloadProjectInfoTask
+          to: ProjectInfoTask
