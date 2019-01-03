@@ -130,7 +130,7 @@ class ReadmeStore(CephWorkerStorageBase):
         result: dict,
     ) -> dict:
         """Store the given readme file for the given project."""
-        project_name = node_args["project_name"]
+        project_name = node_args["package_name"]
         document = {"result": result, "@meta": {"datetime": datetime_str()}}
         return self.ceph.store_document(document, self._get_object_key(project_name))
 
@@ -138,11 +138,12 @@ class ReadmeStore(CephWorkerStorageBase):
 class Project2VecModelStore(CephWorkerStorageBase):
     """Storing the resulting project2vec vector space model."""
 
-    _DOCUMENT_ID = "project2vec."
+    _METADATA_DOCUMENT_ID = "metadata.tsv"
+    _VECTOR_DOCUMENT_ID = "vectors.tsv"
 
-    def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
+    def retrieve(self, flow_name: str, task_name: str, task_id: str) -> tuple:
         """Retrieve the given project2vec model representation."""
-        return self.ceph.retrieve_blob(self._DOCUMENT_ID)
+        return self.retrieve_model()
 
     def store(
         self,
@@ -151,9 +152,43 @@ class Project2VecModelStore(CephWorkerStorageBase):
         task_name: str,
         task_id: str,
         result: dict,
-    ) -> dict:
+    ) -> None:
         """Store keywords stored on Ceph."""
-        return self.ceph.store_blob(result, self._DOCUMENT_ID)
+        package_names, vector_space = result
+
+        metadata_file_content = "Index\tPackage name\n"
+        for idx, package_name in enumerate(package_names):
+            metadata_file_content += f"{idx}\t{package_name}\n"
+
+        vector_file_content = ""
+        for vector in vector_space:
+            vector_file_content += "\t".join(str(i) for i in vector) + "\n"
+
+        self.ceph.store_blob(metadata_file_content, self._METADATA_DOCUMENT_ID)
+        self.ceph.store_blob(vector_file_content, self._VECTOR_DOCUMENT_ID)
+
+    def retrieve_model(self) -> tuple:
+        """Retrieve model - use this method instead of retrieve that is intended for Selinon."""
+        metadata_file_content, vector_file_content = self.retrieve_tsv_model()
+
+        package_names = []
+        for line in metadata_file_content.splitlines()[1:]:
+            package_names.append(line.split("\t")[1])
+
+        vector_space = []
+        for vector_line in vector_file_content.splitlines():
+            vector = [int(item) for item in vector_line.split("\t")]
+            vector_space.append(vector)
+
+        return package_names, vector_space
+
+    def retrieve_tsv_model(self):
+        """Retrieve model in a TSV form suitable for TensorBoard projector."""
+        metadata_file_content = self.ceph.retrieve_blob(
+            self._METADATA_DOCUMENT_ID
+        ).decode()
+        vector_file_content = self.ceph.retrieve_blob(self._VECTOR_DOCUMENT_ID).decode()
+        return metadata_file_content, vector_file_content
 
 
 class KeywordsStoreBase(CephWorkerStorageBase):

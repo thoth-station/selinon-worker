@@ -22,5 +22,5 @@ class ThothWorkerException(Exception):
     """A base class for all exceptions in thoth-worker project."""
 
 
-class NotFoundException(Exception):
+class NotFoundException(ThothWorkerException):
     """An exception raised in case of missing resource (see storages)."""

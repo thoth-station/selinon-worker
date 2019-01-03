@@ -6,11 +6,11 @@
       edges:
         - from:
           to: _pypi_keywords_flow
-        - from:
-          to: StackOverflowKeywordsAggregationTask
+        # - from:
+        #   to: StackOverflowKeywordsAggregationTask
         - from:
             - _pypi_keywords_flow
-            - StackOverflowKeywordsAggregationTask
+            # - StackOverflowKeywordsAggregationTask
           to: KeywordsAggregationTask
 
     - name: _pypi_keywords_flow

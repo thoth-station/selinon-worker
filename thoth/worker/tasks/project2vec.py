@@ -19,6 +19,7 @@
 
 import typing
 import itertools
+import logging
 
 from nltk import word_tokenize
 from selinon import SelinonTask
@@ -27,9 +28,13 @@ from selinon.errors import NoParentNodeError
 
 from thoth.worker.exceptions import NotFoundException
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class Project2VecTask(SelinonTask):
     """Implementation of project2vec for a single project (one vector in the resulting project2vec vector space)."""
+
+    _KEYWORD_OCCURRENCE_THRESHOLD = 0
 
     @staticmethod
     def get_documents(package_name: str):
@@ -43,6 +48,7 @@ class Project2VecTask(SelinonTask):
                 "info", {}
             ).get("description", "")
         except NotFoundException:
+            _LOGGER.info("No project info found found for project %r", package_name)
             pass
 
         try:
@@ -50,16 +56,21 @@ class Project2VecTask(SelinonTask):
                 "content"
             ]
         except NotFoundException:
+            _LOGGER.info("No README file found for project %r", package_name)
             pass
 
-    @staticmethod
-    def get_keywords() -> typing.List[str]:
+    @classmethod
+    def get_keywords(cls) -> typing.List[str]:
         """Retrieve keywords vector aggregated before."""
         aggregated_keywords_store = StoragePool.get_connected_storage(
             "AggregatedKeywordsStore"
         )
         keywords = aggregated_keywords_store.retrieve_keywords()
-        return sorted(keywords.keys())
+        return sorted(
+            keyword
+            for keyword, occurrence in keywords["result"].items()
+            if occurrence > cls._KEYWORD_OCCURRENCE_THRESHOLD
+        )
 
     def run(self, node_args: dict) -> dict:
         """Compute a single vector for project2vec for the given project."""
@@ -87,13 +98,13 @@ class Project2VecCreationTask(SelinonTask):
         self, node_args: dict
     ) -> typing.Tuple[typing.List[str], typing.List[typing.List[int]]]:
         """Aggregate project2vec results into a single vector space."""
-        # Aggregate all the results into a vector space.
         projects = []
         for i in itertools.count():
             try:
-                result = self.parent_flow_result("_project2vec", "Project2Vec", i)
+                result = self.parent_flow_result("_project2vec", "Project2VecTask", i)
             except NoParentNodeError:
                 # This exception is raised if there are no more parent tasks.
+                _LOGGER.exception("Foo")
                 break
 
             projects.append((result["project"], result["vector"]))

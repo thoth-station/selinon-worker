@@ -146,8 +146,10 @@
         s3_endpoint: '{THOTH_S3_ENDPOINT_URL}'
 
     - name: Project2VecModelStore
+      import: thoth.worker.storages
       configuration:
         <<: *ceph_configuration
+        prefix: '{THOTH_CEPH_BUCKET_PREFIX}project2vec/'
 
     - name: ProjectInfoStore
       import: thoth.worker.storages
