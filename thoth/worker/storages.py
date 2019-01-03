@@ -20,8 +20,11 @@
 import os
 
 from thoth.storages.ceph import CephStore
+from thoth.storages.exceptions import NotFoundError as CephNotFound
 from thoth.common import datetime2datetime_str as datetime_str
 from selinon import DataStorage
+
+from .exceptions import NotFoundException
 
 
 class CephWorkerStorageBase(DataStorage):
@@ -72,7 +75,12 @@ class ProjectInfoStore(CephWorkerStorageBase):
 
     def retrieve_project_info(self, package_name: str):
         """Retrieve project information as stored on Ceph."""
-        return self.ceph.retrieve_document(package_name)
+        try:
+            return self.ceph.retrieve_document(package_name)
+        except CephNotFound as exc:
+            raise NotFoundException(
+                f"No project information found for project {package_name}"
+            ) from exc
 
     def store(
         self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: str
@@ -106,7 +114,12 @@ class ReadmeStore(CephWorkerStorageBase):
 
     def retrieve_project_readme(self, project_name: str) -> dict:
         """Retrieve a project readme file."""
-        return self.ceph.retrieve_document(self._get_object_key(project_name))
+        try:
+            return self.ceph.retrieve_document(self._get_object_key(project_name))
+        except CephNotFound as exc:
+            raise NotFoundException(
+                f"Readme for project {project_name} not found"
+            ) from exc
 
     def store(
         self,
@@ -122,10 +135,35 @@ class ReadmeStore(CephWorkerStorageBase):
         return self.ceph.store_document(document, self._get_object_key(project_name))
 
 
+class Project2VecModelStore(CephWorkerStorageBase):
+    """Storing the resulting project2vec vector space model."""
+
+    _DOCUMENT_ID = "project2vec."
+
+    def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
+        """Retrieve the given project2vec model representation."""
+        return self.ceph.retrieve_blob(self._DOCUMENT_ID)
+
+    def store(
+        self,
+        node_args: dict,
+        flow_name: str,
+        task_name: str,
+        task_id: str,
+        result: dict,
+    ) -> dict:
+        """Store keywords stored on Ceph."""
+        return self.ceph.store_blob(result, self._DOCUMENT_ID)
+
+
 class KeywordsStoreBase(CephWorkerStorageBase):
     """Storing JSON documents with aggregated keywords."""
 
     _DOCUMENT_ID = None
+
+    def retrieve_keywords(self):
+        """Retrieve keywords, more sutable for use instead of raw retrieve that is intended to be used by Selinon."""
+        return self.ceph.retrieve_document(self._DOCUMENT_ID)
 
     def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
         """Retrieve keywords stored on Ceph."""

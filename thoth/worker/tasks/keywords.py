@@ -30,13 +30,6 @@ from selinon.errors import NoParentNodeError
 _LOGGER = logging.getLogger(__name__)
 
 
-class PyPIKeywordsAggregationTask(SelinonTask):
-    """Extract keywords from project information that was previously aggregated."""
-
-    def run(self, node_args: dict) -> dict:
-        """Extract and aggregate keywords from project description as provided by PyPI."""
-
-
 class StackOverflowKeywordsAggregationTask(SelinonTask):
     """Aggregate keywords from StackOverflow."""
 
@@ -48,6 +41,7 @@ class StackOverflowKeywordsAggregationTask(SelinonTask):
         """Aggregate StackOverflow keywords."""
         # Move import here as we run this task locally, there are issues with libarchive.so in Python's s2i.
         import libarchive.public
+
         response = requests.get(self._STACKOVERFLOW_URL)
         if not response.ok:
             raise RuntimeError(
