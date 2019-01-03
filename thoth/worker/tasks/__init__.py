@@ -34,3 +34,4 @@ from .keywords import PyPIKeywordsAggregationTask
 from .keywords import StackOverflowKeywordsAggregationTask
 from .keywords import KeywordsAggregationTask
 from .pypi import RetrieveProjectReadmeTask
+from .keywords import PyPIProjectKeywordsTask

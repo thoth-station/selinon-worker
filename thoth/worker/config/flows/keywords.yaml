@@ -2,12 +2,30 @@
   flow-definitions:
     - name: keywords
       queue: keywords_flow
+      propagate_compound_finished: true
       edges:
         - from:
-          to: PyPIKeywordsAggregationTask
+          to: _pypi_keywords_flow
         - from:
           to: StackOverflowKeywordsAggregationTask
         - from:
-            - PyPIKeywordsAggregationTask
+            - _pypi_keywords_flow
             - StackOverflowKeywordsAggregationTask
           to: KeywordsAggregationTask
+
+    - name: _pypi_keywords_flow
+      queue: pypi_keywords_flow
+      propagate_compound_finished: true
+      edges:
+        - from:
+          to: __pypi_keywords_flow
+          foreach:
+            function: iter_pypi_projects_ceph
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: __pypi_keywords_flow
+      queue: _pypi_keywords_flow
+      edges:
+        - from:
+          to: PyPIProjectKeywordsTask

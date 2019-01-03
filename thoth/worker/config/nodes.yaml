@@ -28,14 +28,12 @@
       max_retry: 0
       storage: ProjectInfoStore
 
-    - name: PyPIKeywordsAggregationTask
-      queue: keywords_aggregation_task
+    - name: PyPIProjectKeywordsTask
+      queue: pypi_project_keywords_task
       import: thoth.worker.tasks
       max_retry: 0
-      storage: PyPIKeywordsStore
-      selective_run_function:
-        import: thoth.worker.selective
-        name: no_run_generic
+      storage: PyPIKeywordsRedis
+      # storage: Memory
 
     - name: StackOverflowKeywordsAggregationTask
       queue: keywords_aggregation_task
@@ -61,16 +59,9 @@
       max_retry: 0
       storage: ReadmeStore
 
-    #- name: 'Memory'
-    #  classname: 'InMemoryStorage'
-    #  import: selinon.storages.memory
-    #  configuration:
-    #    echo: false
-
   flows:
     # Sync results of solvers and package-extract (used for debug and benchmarks).
     - sync_flow
-    - _do_sync_flow
     # Aggregate project info for all PyPI projects
     #   args: None
     - pypi
@@ -86,6 +77,10 @@
     # Aggregate README files for all PyPI projects, the README file is aggregated based on project home page URL (github).
     #   args: None
     - project_readme_files
+    # All flows prefixed by underscore are "internal" temporary flows and should not be called by a user.
+    - _pypi_keywords_flow
+    - __pypi_keywords_flow
+    - _do_sync_flow
 
   storages:
     - name: Redis
@@ -96,7 +91,22 @@
         db: 1
         charset: 'utf-8'
 
-    - name: ProjectInfoStore
+    - name: PyPIKeywordsRedis
+      classname: Redis
+      import: selinon.storages.redis
+      configuration:
+        host: redis
+        port: 6379
+        db: 2
+        charset: 'utf-8'
+
+    # - name: Memory
+    #   classname: InMemoryStorage
+    #   import: selinon.storages.memory
+    #   configuration:
+    #     echo: false
+
+    - name: PyPIKeywordsStore
       import: thoth.worker.storages
       configuration: &ceph_configuration
         bucket: '{THOTH_CEPH_BUCKET}'
@@ -105,10 +115,11 @@
         aws_secret_access_key: '{THOTH_CEPH_SECRET_KEY}'
         s3_endpoint: '{THOTH_S3_ENDPOINT_URL}'
 
-    - name: PyPIKeywordsStore
+    - name: ProjectInfoStore
       import: thoth.worker.storages
       configuration:
         <<: *ceph_configuration
+        prefix: '{THOTH_CEPH_BUCKET_PREFIX}pypi_project/ProjectInfo/'
 
     - name: StackOverflowKeywordsStore
       import: thoth.worker.storages

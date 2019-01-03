@@ -59,24 +59,17 @@ class CephWorkerStorageBase(DataStorage):
 class ProjectInfoStore(CephWorkerStorageBase):
     """Store information about the given Python project."""
 
-    @staticmethod
-    def get_result_document_id(flow_name: str, task_name: str, package_name: str):
-        """Get id of a document (object key) storing project information."""
-        return os.path.join(flow_name, task_name[:-len("Task")], package_name)
-
     def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
         # We do not provide implementation of this method as we store project information based on project name.
         raise NotImplementedError
 
-    def retrieve_project_info(self, flow_name: str, task_name: str, package_name: str):
+    def retrieve_project_info(self, package_name: str):
         """Retrieve project information as stored on Ceph."""
-        document_id = self.get_result_document_id(flow_name, task_name, package_name)
-        return self.ceph.retrieve_document(document_id)
+        return self.ceph.retrieve_document(package_name)
 
     def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: str) -> str:
         """Store package information."""
-        document_id = self.get_result_document_id(flow_name, task_name, node_args["package_name"])
-        return self.ceph.store_document(result, document_id)
+        return self.ceph.store_document(result, node_args["package_name"])
 
     def iter_project_info_documents(self) -> dict:
         """Iterate over documents stored on Ceph."""
@@ -122,7 +115,7 @@ class KeywordsStoreBase(CephWorkerStorageBase):
 
     def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
         """Retrieve keywords stored on Ceph."""
-        self.ceph.retrieve_document(self._DOCUMENT_ID)
+        return self.ceph.retrieve_document(self._DOCUMENT_ID)
 
     def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: dict) -> dict:
         """Store keywords stored on Ceph."""

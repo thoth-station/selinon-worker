@@ -87,7 +87,7 @@ class RetrieveProjectReadmeTask(SelinonTask):
         package_name = node_args["package_name"]
         project_info_store = StoragePool.get_connected_storage("ProjectInfoStore")
 
-        home_page = project_info_store.retrieve_project_info("pypi_project", "ProjectInfoTask", package_name).get("info", {}).get("home_page")
+        home_page = project_info_store.retrieve_project_info(package_name).get("info", {}).get("home_page")
         if not home_page:
             raise FatalTaskError(f"No home page found for project {package_name!r}")
 
