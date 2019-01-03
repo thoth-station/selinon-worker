@@ -21,7 +21,6 @@ import logging
 import re
 import itertools
 
-import libarchive.public
 import xmltodict
 import requests
 from selinon import SelinonTask
@@ -47,6 +46,8 @@ class StackOverflowKeywordsAggregationTask(SelinonTask):
 
     def run(self, node_args: dict) -> dict:
         """Aggregate StackOverflow keywords."""
+        # Move import here as we run this task locally, there are issues with libarchive.so in Python's s2i.
+        import libarchive.public
         response = requests.get(self._STACKOVERFLOW_URL)
         if not response.ok:
             raise RuntimeError(
