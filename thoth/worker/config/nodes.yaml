@@ -28,11 +28,59 @@
       max_retry: 0
       storage: ProjectInfoStore
 
+    - name: PyPIProjectKeywordsTask
+      queue: pypi_project_keywords_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: PyPIKeywordsRedis
+      # storage: Memory
+
+    - name: StackOverflowKeywordsAggregationTask
+      queue: keywords_aggregation_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: StackOverflowKeywordsStore
+      selective_run_function:
+        import: thoth.worker.selective
+        name: no_run_generic
+
+    - name: KeywordsAggregationTask
+      queue: keywords_aggregation_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: AggregatedKeywordsStore
+      selective_run_function:
+        import: thoth.worker.selective
+        name: no_run_generic
+
+    - name: RetrieveProjectReadmeTask
+      queue: retrieve_project_readme_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: ReadmeStore
+
   flows:
+    # Sync results of solvers and package-extract (used for debug and benchmarks).
     - sync_flow
-    - _do_sync_flow
+    # Aggregate project info for all PyPI projects
+    #   args: None
     - pypi
+    # Aggregate project info for a single PyPI project
+    #   args: {"project_name": "thoth-worker"}
     - pypi_project
+    # Aggregate keywords from PyPI project info (keywords section) as well as StackOverflow.
+    #   args: None
+    - keywords
+    # Aggregate README file for a single package, the URL is taken from project info dict as aggregated in pypi_project.
+    #   args: {"project_name": "thoth-worker"}
+    - readme_file
+    # Aggregate README files for all PyPI projects, the README file is aggregated based on project home page URL (github).
+    #   args: None
+    - project_readme_files
+    # All flows prefixed by underscore are "internal" temporary flows and should not be called by a user.
+    - _pypi_keywords_flow
+    - __pypi_keywords_flow
+    - _do_sync_flow
 
   storages:
     - name: Redis
@@ -42,14 +90,51 @@
         port: 6379
         db: 1
         charset: 'utf-8'
-    - name: ProjectInfoStore
-      import: thoth.worker.storages
+
+    - name: PyPIKeywordsRedis
+      classname: Redis
+      import: selinon.storages.redis
       configuration:
+        host: redis
+        port: 6379
+        db: 2
+        charset: 'utf-8'
+
+    # - name: Memory
+    #   classname: InMemoryStorage
+    #   import: selinon.storages.memory
+    #   configuration:
+    #     echo: false
+
+    - name: PyPIKeywordsStore
+      import: thoth.worker.storages
+      configuration: &ceph_configuration
         bucket: '{THOTH_CEPH_BUCKET}'
         prefix: '{THOTH_CEPH_BUCKET_PREFIX}'
         aws_access_key_id: '{THOTH_CEPH_KEY_ID}'
         aws_secret_access_key: '{THOTH_CEPH_SECRET_KEY}'
         s3_endpoint: '{THOTH_S3_ENDPOINT_URL}'
+
+    - name: ProjectInfoStore
+      import: thoth.worker.storages
+      configuration:
+        <<: *ceph_configuration
+        prefix: '{THOTH_CEPH_BUCKET_PREFIX}pypi_project/ProjectInfo/'
+
+    - name: StackOverflowKeywordsStore
+      import: thoth.worker.storages
+      configuration:
+        <<: *ceph_configuration
+
+    - name: AggregatedKeywordsStore
+      import: thoth.worker.storages
+      configuration:
+        <<: *ceph_configuration
+
+    - name: ReadmeStore
+      import: thoth.worker.storages
+      configuration:
+        <<: *ceph_configuration
 
   global:
     trace:
