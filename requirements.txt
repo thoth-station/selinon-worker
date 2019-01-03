@@ -1,3 +1,6 @@
 selinon[celery,redis]
 thoth-storages
 thoth-python
+requests
+xmltodict
+thoth-common
