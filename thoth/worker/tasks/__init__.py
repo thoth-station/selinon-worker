@@ -20,10 +20,10 @@
 import logging
 
 # Turn off too verbose loggers.
-logging.getLogger('botocore').setLevel(logging.WARNING)
-logging.getLogger('boto3').setLevel(logging.WARNING)
-logging.getLogger('libarchive').setLevel(logging.WARNING)
-logging.getLogger('urllib3').setLevel(logging.WARNING)
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logging.getLogger("boto3").setLevel(logging.WARNING)
+logging.getLogger("libarchive").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 from .sync import GraphSyncAnalysisTask
 from .sync import GraphSyncSolverTask

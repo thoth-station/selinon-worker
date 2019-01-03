@@ -63,23 +63,27 @@ class ProjectInfoTask(SelinonTask):
 class RetrieveProjectReadmeTask(SelinonTask):
     """Retrieve README file from GitHub/GitLab if available."""
 
-    _GITHUB_README_PATH = "https://raw.githubusercontent.com/{project}/{repo}/master/README{extension}"
+    _GITHUB_README_PATH = (
+        "https://raw.githubusercontent.com/{project}/{repo}/master/README{extension}"
+    )
 
     # Based on https://github.com/github/markup#markups
     # Markup type to its possible extensions mapping, we use OrderedDict as we
     # check the most used types first
-    README_TYPES = OrderedDict((
-        ('Markdown', ('md', 'markdown', 'mdown', 'mkdn')),
-        ('reStructuredText', ('rst',)),
-        ('AsciiDoc', ('asciidoc', 'adoc', 'asc')),
-        ('Textile', ('textile',)),
-        ('RDoc', ('rdoc',)),
-        ('Org', ('org',)),
-        ('Creole', ('creole',)),
-        ('MediaWiki', ('mediawiki', 'wiki')),
-        ('Pod', ('pod',)),
-        ('Unknown', ('',)),
-    ))
+    README_TYPES = OrderedDict(
+        (
+            ("Markdown", ("md", "markdown", "mdown", "mkdn")),
+            ("reStructuredText", ("rst",)),
+            ("AsciiDoc", ("asciidoc", "adoc", "asc")),
+            ("Textile", ("textile",)),
+            ("RDoc", ("rdoc",)),
+            ("Org", ("org",)),
+            ("Creole", ("creole",)),
+            ("MediaWiki", ("mediawiki", "wiki")),
+            ("Pod", ("pod",)),
+            ("Unknown", ("",)),
+        )
+    )
 
     def run(self, node_args) -> dict:
         """Retrieve README file from GitHub."""
@@ -87,29 +91,51 @@ class RetrieveProjectReadmeTask(SelinonTask):
         package_name = node_args["package_name"]
         project_info_store = StoragePool.get_connected_storage("ProjectInfoStore")
 
-        home_page = project_info_store.retrieve_project_info(package_name).get("info", {}).get("home_page")
+        home_page = (
+            project_info_store.retrieve_project_info(package_name)
+            .get("info", {})
+            .get("home_page")
+        )
         if not home_page:
             raise FatalTaskError(f"No home page found for project {package_name!r}")
 
         home_page = urlparse(home_page)
         if home_page.netloc != "github.com":
-            raise FatalTaskError(f"No GitHub home page associated for project {package_name!r}")
+            raise FatalTaskError(
+                f"No GitHub home page associated for project {package_name!r}"
+            )
 
         path_parts = home_page.path.split("/")
         if len(path_parts) < 3:
             # 3 because of leading slash
-            raise FatalTaskError(f"Unable to parse GitHub organization and repo for project {package_name!r}")
+            raise FatalTaskError(
+                f"Unable to parse GitHub organization and repo for project {package_name!r}"
+            )
 
         project, repo = path_parts[1], path_parts[2]
         for readme_type, extensions in self.README_TYPES.items():
             for extension in extensions:
                 if extension:
-                    extension = '.' + extension
-                url = self._GITHUB_README_PATH.format(project=project, repo=repo, extension=extension)
+                    extension = "." + extension
+                url = self._GITHUB_README_PATH.format(
+                    project=project, repo=repo, extension=extension
+                )
                 response = requests.get(url)
                 if response.status_code != 200:
-                    _LOGGER.debug('No README%s found for type "%s" at "%s"', extension, readme_type, url)
+                    _LOGGER.debug(
+                        'No README%s found for type "%s" at "%s"',
+                        extension,
+                        readme_type,
+                        url,
+                    )
                     continue
 
-                _LOGGER.debug('README%s found for type "%s" at "%s"', extension, readme_type, url)
-                return {'type': readme_type, 'content': response.text, 'package_name': package_name, 'url': url}
+                _LOGGER.debug(
+                    'README%s found for type "%s" at "%s"', extension, readme_type, url
+                )
+                return {
+                    "type": readme_type,
+                    "content": response.text,
+                    "package_name": package_name,
+                    "url": url,
+                }

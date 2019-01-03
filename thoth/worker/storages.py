@@ -27,7 +27,14 @@ from selinon import DataStorage
 class CephWorkerStorageBase(DataStorage):
     """A base class for implementing Ceph based adapters in Thoth's worker."""
 
-    def __init__(self, bucket: str, prefix: str, aws_access_key_id: str, aws_secret_access_key: str, s3_endpoint: str):
+    def __init__(
+        self,
+        bucket: str,
+        prefix: str,
+        aws_access_key_id: str,
+        aws_secret_access_key: str,
+        s3_endpoint: str,
+    ):
         """Initialize storing of project information."""
         self.ceph = None
         self.bucket = bucket
@@ -43,7 +50,7 @@ class CephWorkerStorageBase(DataStorage):
             bucket=self.bucket.format(**os.environ),
             secret_key=self.aws_secret_access_key.format(**os.environ),
             key_id=self.aws_access_key_id.format(**os.environ),
-            host=self.s3_endpoint.format(**os.environ)
+            host=self.s3_endpoint.format(**os.environ),
         )
         self.ceph.connect()
 
@@ -67,7 +74,9 @@ class ProjectInfoStore(CephWorkerStorageBase):
         """Retrieve project information as stored on Ceph."""
         return self.ceph.retrieve_document(package_name)
 
-    def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: str) -> str:
+    def store(
+        self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: str
+    ) -> str:
         """Store package information."""
         return self.ceph.store_document(result, node_args["package_name"])
 
@@ -77,7 +86,10 @@ class ProjectInfoStore(CephWorkerStorageBase):
 
     def get_project_listing(self):
         """Get listing of projects for which there is stored project info."""
-        return [document_id.split('/')[-1] for document_id in self.ceph.get_document_listing()]
+        return [
+            document_id.split("/")[-1]
+            for document_id in self.ceph.get_document_listing()
+        ]
 
 
 class ReadmeStore(CephWorkerStorageBase):
@@ -90,21 +102,23 @@ class ReadmeStore(CephWorkerStorageBase):
     @staticmethod
     def _get_object_key(project_name: str) -> str:
         """Get object key under"""
-        return os.path.join('readme', project_name)
+        return os.path.join("readme", project_name)
 
     def retrieve_project_readme(self, project_name: str) -> dict:
         """Retrieve a project readme file."""
         return self.ceph.retrieve_document(self._get_object_key(project_name))
 
-    def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: dict) -> dict:
+    def store(
+        self,
+        node_args: dict,
+        flow_name: str,
+        task_name: str,
+        task_id: str,
+        result: dict,
+    ) -> dict:
         """Store the given readme file for the given project."""
-        project_name = node_args['project_name']
-        document = {
-            'result': result,
-            '@meta': {
-                'datetime': datetime_str()
-            }
-        }
+        project_name = node_args["project_name"]
+        document = {"result": result, "@meta": {"datetime": datetime_str()}}
         return self.ceph.store_document(document, self._get_object_key(project_name))
 
 
@@ -117,31 +131,32 @@ class KeywordsStoreBase(CephWorkerStorageBase):
         """Retrieve keywords stored on Ceph."""
         return self.ceph.retrieve_document(self._DOCUMENT_ID)
 
-    def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: dict) -> dict:
+    def store(
+        self,
+        node_args: dict,
+        flow_name: str,
+        task_name: str,
+        task_id: str,
+        result: dict,
+    ) -> dict:
         """Store keywords stored on Ceph."""
-        document = {
-            'result': result,
-            '@meta': {
-                'datetime': datetime_str()
-            }
-        }
+        document = {"result": result, "@meta": {"datetime": datetime_str()}}
         return self.ceph.store_document(document, self._DOCUMENT_ID)
 
 
 class PyPIKeywordsStore(KeywordsStoreBase):
     """Storing keywords of keywords as found on PyPI."""
 
-    _DOCUMENT_ID = 'keywords_pypi.json'
+    _DOCUMENT_ID = "keywords_pypi.json"
 
 
 class StackOverflowKeywordsStore(KeywordsStoreBase):
     """Store keywords as found on StackOverflow."""
 
-    _DOCUMENT_ID = 'keywords_stackoverflow.json'
+    _DOCUMENT_ID = "keywords_stackoverflow.json"
 
 
 class AggregatedKeywordsStore(KeywordsStoreBase):
     """Store keywords that are aggregated from different keywords sources."""
 
-    _DOCUMENT_ID = 'keywords_aggregated.json'
-
+    _DOCUMENT_ID = "keywords_aggregated.json"

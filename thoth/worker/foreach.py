@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 def iter_sync_documents(storage_pool, node_args):
     """Iterate over documents to be synced."""
     try:
-        return storage_pool.get('SyncListingTask')
+        return storage_pool.get("SyncListingTask")
     except Exception as exc:
         _LOGGER.exception(str(exc))
         return []
@@ -35,7 +35,7 @@ def iter_sync_documents(storage_pool, node_args):
 def iter_pypi_projects(storage_pool, node_args):
     """Iterate over PyPI projects as stated on PyPI simple API index."""
     try:
-        return storage_pool.get('PyPIListingTask')
+        return storage_pool.get("PyPIListingTask")
     except Exception as exc:
         _LOGGER.exception(str(exc))
         return []
@@ -44,8 +44,11 @@ def iter_pypi_projects(storage_pool, node_args):
 def iter_pypi_projects_ceph(storage_pool, node_args):
     """Iterate over documents of project information as stored on Ceph."""
     try:
-        storage = storage_pool.get_connected_storage('ProjectInfoStore')
-        return [{"package_name": package_name} for package_name in storage.get_project_listing()]
+        storage = storage_pool.get_connected_storage("ProjectInfoStore")
+        return [
+            {"package_name": package_name}
+            for package_name in storage.get_project_listing()
+        ]
     except Exception as exc:
         _LOGGER.exception(str(exc))
         return []

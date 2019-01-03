@@ -41,13 +41,19 @@ class PyPIKeywordsAggregationTask(SelinonTask):
 class StackOverflowKeywordsAggregationTask(SelinonTask):
     """Aggregate keywords from StackOverflow."""
 
-    _STACKOVERFLOW_URL = 'https://archive.org/download/stackexchange/stackoverflow.com-Tags.7z'
+    _STACKOVERFLOW_URL = (
+        "https://archive.org/download/stackexchange/stackoverflow.com-Tags.7z"
+    )
 
     def run(self, node_args: dict) -> dict:
         """Aggregate StackOverflow keywords."""
         response = requests.get(self._STACKOVERFLOW_URL)
         if not response.ok:
-            raise RuntimeError("Failed to fetch stack overflow tags, request ended with status code %s: %s", response.status_code, response.text)
+            raise RuntimeError(
+                "Failed to fetch stack overflow tags, request ended with status code %s: %s",
+                response.status_code,
+                response.text,
+            )
 
         tags = None
         with libarchive.public.memory_reader(response.content) as archive:
@@ -56,11 +62,13 @@ class StackOverflowKeywordsAggregationTask(SelinonTask):
                 break
 
         result = {}
-        for tag in tags['tags']['row']:
+        for tag in tags["tags"]["row"]:
             try:
-                result[tag['@TagName']] = int(tag['@Count'])
+                result[tag["@TagName"]] = int(tag["@Count"])
             except ValueError:
-                _LOGGER.warning("Failed to parse number of occurrences for tag %s", tag['@TagName'])
+                _LOGGER.warning(
+                    "Failed to parse number of occurrences for tag %s", tag["@TagName"]
+                )
                 continue
             except KeyError:
                 _LOGGER.exception("Missing tagname or tag count")
@@ -77,7 +85,9 @@ class KeywordsAggregationTask(SelinonTask):
         result = {}
         for i in itertools.count():
             try:
-                keywords = self.parent_flow_result('_pypi_keywords_flow', 'PyPIProjectKeywordsTask', i)
+                keywords = self.parent_flow_result(
+                    "_pypi_keywords_flow", "PyPIProjectKeywordsTask", i
+                )
             except NoParentNodeError:
                 # This exception is raised if there are no more parent tasks.
                 break
@@ -93,12 +103,13 @@ class KeywordsAggregationTask(SelinonTask):
 
 class PyPIProjectKeywordsTask(SelinonTask):
     """Get keywords for a single project."""
+
     def run(self, node_args: dict) -> dict:
-        package_name = node_args['package_name']
+        package_name = node_args["package_name"]
         project_info_store = StoragePool.get_connected_storage("ProjectInfoStore")
         document = project_info_store.retrieve_project_info(package_name)
 
-        keywords = document.get("info", {}).get('keywords') or ''
+        keywords = document.get("info", {}).get("keywords") or ""
         keywords = re.split(r"[\s+,;]", keywords)
 
         keywords_dict = {}
@@ -110,4 +121,3 @@ class PyPIProjectKeywordsTask(SelinonTask):
             keywords_dict[keyword] = keywords_dict.get(keyword, 0) + 1
 
         return keywords_dict
-

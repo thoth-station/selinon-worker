@@ -23,4 +23,4 @@ def no_run_generic(flow_name, node_name, node_args, task_names, storage_pool):
 
     This is useful in scenario where we do not not use task_id when storing results of tasks.
     """
-    return '@id'
+    return "@id"
