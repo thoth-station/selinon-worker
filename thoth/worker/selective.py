@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Selinon worker for Thoth to perform data aggregation and analysis for high volume data (parallel processing)."""
+"""Implementation of selective run functions used in selective flow runs."""
 
-__name__ = 'thoth.worker'
-__version__ = '0.0.1'
-__author__ = 'Fridolin Pokorny'
 
-from .utils import get_config_files
-from .utils import init
+def no_run_generic(flow_name, node_name, node_args, task_names, storage_pool):
+    """Do not run task on selective flow runs.
+
+    This is useful in scenario where we do not not use task_id when storing results of tasks.
+    """
+    return '@id'

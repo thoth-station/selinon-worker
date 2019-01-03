@@ -8,9 +8,12 @@ selinon = "*"
 redis = "*"
 thoth-storages = "*"
 thoth-python = "*"
+requests = "*"
+libarchive = "*"
+xmltodict = "*"
+thoth-common = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.6"
-

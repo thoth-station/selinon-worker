@@ -20,13 +20,15 @@
 import os
 
 from thoth.storages.ceph import CephStore
+from thoth.common import datetime2datetime_str as datetime_str
 from selinon import DataStorage
 
 
-class ProjectInfoStore(DataStorage):
-    """Store information about the given Python project."""
+class CephWorkerStorageBase(DataStorage):
+    """A base class for implementing Ceph based adapters in Thoth's worker."""
 
     def __init__(self, bucket: str, prefix: str, aws_access_key_id: str, aws_secret_access_key: str, s3_endpoint: str):
+        """Initialize storing of project information."""
         self.ceph = None
         self.bucket = bucket
         self.prefix = prefix
@@ -35,6 +37,7 @@ class ProjectInfoStore(DataStorage):
         self.s3_endpoint = s3_endpoint
 
     def connect(self):
+        """Connect to the remote Ceph."""
         self.ceph = CephStore(
             prefix=self.prefix.format(**os.environ),
             bucket=self.bucket.format(**os.environ),
@@ -45,18 +48,107 @@ class ProjectInfoStore(DataStorage):
         self.ceph.connect()
 
     def is_connected(self):
+        """Check if we are connected to a Ceph."""
         return self.ceph is not None
 
     def disconnect(self):
+        """Disconnect from remote Ceph."""
         self.ceph = None
 
+
+class ProjectInfoStore(CephWorkerStorageBase):
+    """Store information about the given Python project."""
+
     @staticmethod
-    def get_result_document_id(flow_name: str, task_name: str, node_args):
-        return os.path.join(flow_name, task_name[:-len("Task")], node_args["package_name"])
+    def get_result_document_id(flow_name: str, task_name: str, package_name: str):
+        """Get id of a document (object key) storing project information."""
+        return os.path.join(flow_name, task_name[:-len("Task")], package_name)
 
     def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
+        # We do not provide implementation of this method as we store project information based on project name.
         raise NotImplementedError
 
+    def retrieve_project_info(self, flow_name: str, task_name: str, package_name: str):
+        """Retrieve project information as stored on Ceph."""
+        document_id = self.get_result_document_id(flow_name, task_name, package_name)
+        return self.ceph.retrieve_document(document_id)
+
     def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: str) -> str:
-        document_id = self.get_result_document_id(flow_name, task_name, node_args)
+        """Store package information."""
+        document_id = self.get_result_document_id(flow_name, task_name, node_args["package_name"])
         return self.ceph.store_document(result, document_id)
+
+    def iter_project_info_documents(self) -> dict:
+        """Iterate over documents stored on Ceph."""
+        yield from (document for _, document in self.ceph.iterate_results())
+
+    def get_project_listing(self):
+        """Get listing of projects for which there is stored project info."""
+        return [document_id.split('/')[-1] for document_id in self.ceph.get_document_listing()]
+
+
+class ReadmeStore(CephWorkerStorageBase):
+    """Store project README files onto Ceph."""
+
+    def retrieve(self, flow_name, task_name, task_id):
+        # We use project name for naming files so this method cannot be used, but is required by Selinon.
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_object_key(project_name: str) -> str:
+        """Get object key under"""
+        return os.path.join('readme', project_name)
+
+    def retrieve_project_readme(self, project_name: str) -> dict:
+        """Retrieve a project readme file."""
+        return self.ceph.retrieve_document(self._get_object_key(project_name))
+
+    def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: dict) -> dict:
+        """Store the given readme file for the given project."""
+        project_name = node_args['project_name']
+        document = {
+            'result': result,
+            '@meta': {
+                'datetime': datetime_str()
+            }
+        }
+        return self.ceph.store_document(document, self._get_object_key(project_name))
+
+
+class KeywordsStoreBase(CephWorkerStorageBase):
+    """Storing JSON documents with aggregated keywords."""
+
+    _DOCUMENT_ID = None
+
+    def retrieve(self, flow_name: str, task_name: str, task_id: str) -> dict:
+        """Retrieve keywords stored on Ceph."""
+        self.ceph.retrieve_document(self._DOCUMENT_ID)
+
+    def store(self, node_args: dict, flow_name: str, task_name: str, task_id: str, result: dict) -> dict:
+        """Store keywords stored on Ceph."""
+        document = {
+            'result': result,
+            '@meta': {
+                'datetime': datetime_str()
+            }
+        }
+        return self.ceph.store_document(document, self._DOCUMENT_ID)
+
+
+class PyPIKeywordsStore(KeywordsStoreBase):
+    """Storing keywords of keywords as found on PyPI."""
+
+    _DOCUMENT_ID = 'keywords_pypi.json'
+
+
+class StackOverflowKeywordsStore(KeywordsStoreBase):
+    """Store keywords as found on StackOverflow."""
+
+    _DOCUMENT_ID = 'keywords_stackoverflow.json'
+
+
+class AggregatedKeywordsStore(KeywordsStoreBase):
+    """Store keywords that are aggregated from different keywords sources."""
+
+    _DOCUMENT_ID = 'keywords_aggregated.json'
+

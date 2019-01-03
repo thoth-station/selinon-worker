@@ -1,0 +1,13 @@
+---
+  flow-definitions:
+    - name: keywords
+      queue: keywords_flow
+      edges:
+        - from:
+          to: PyPIKeywordsAggregationTask
+        - from:
+          to: StackOverflowKeywordsAggregationTask
+        - from:
+            - PyPIKeywordsAggregationTask
+            - StackOverflowKeywordsAggregationTask
+          to: KeywordsAggregationTask

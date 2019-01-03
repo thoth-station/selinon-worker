@@ -17,8 +17,20 @@
 
 """Tasks available in Selinon worker for data aggregation and processing."""
 
+import logging
+
+# Turn off too verbose loggers.
+logging.getLogger('botocore').setLevel(logging.WARNING)
+logging.getLogger('boto3').setLevel(logging.WARNING)
+logging.getLogger('libarchive').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
 from .sync import GraphSyncAnalysisTask
 from .sync import GraphSyncSolverTask
 from .sync import SyncListingTask
 from .pypi import PyPIListingTask
 from .pypi import ProjectInfoTask
+from .keywords import PyPIKeywordsAggregationTask
+from .keywords import StackOverflowKeywordsAggregationTask
+from .keywords import KeywordsAggregationTask
+from .pypi import RetrieveProjectReadmeTask
