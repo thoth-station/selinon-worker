@@ -1,0 +1,27 @@
+---
+  flow-definitions:
+    - name: project2vec
+      queue: project2vec_flow
+      propagate_compound_finished: true
+      edges:
+        - from:
+          to: _project2vec
+        - from: _project2vec
+          to: Project2VecCreationTask
+
+    - name: _project2vec
+      queue: _project2vec_flow
+      propagate_compound_finished: true
+      edges:
+        - from:
+          to: project2vec_single
+          foreach:
+            function: iter_pypi_projects_ceph
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: project2vec_single
+      queue: project2vec_single
+      edges:
+        - from:
+          to: Project2VecTask

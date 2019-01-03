@@ -25,13 +25,14 @@ logging.getLogger("boto3").setLevel(logging.WARNING)
 logging.getLogger("libarchive").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+from .keywords import KeywordsAggregationTask
+from .keywords import PyPIProjectKeywordsTask
+from .keywords import StackOverflowKeywordsAggregationTask
+from .project2vec import Project2VecCreationTask
+from .project2vec import Project2VecTask
+from .pypi import ProjectInfoTask
+from .pypi import PyPIListingTask
+from .pypi import RetrieveProjectReadmeTask
 from .sync import GraphSyncAnalysisTask
 from .sync import GraphSyncSolverTask
 from .sync import SyncListingTask
-from .pypi import PyPIListingTask
-from .pypi import ProjectInfoTask
-from .keywords import PyPIKeywordsAggregationTask
-from .keywords import StackOverflowKeywordsAggregationTask
-from .keywords import KeywordsAggregationTask
-from .pypi import RetrieveProjectReadmeTask
-from .keywords import PyPIProjectKeywordsTask
