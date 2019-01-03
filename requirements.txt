@@ -4,3 +4,4 @@ thoth-python
 requests
 xmltodict
 thoth-common
+nltk
