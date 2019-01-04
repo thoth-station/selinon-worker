@@ -44,6 +44,13 @@ objects:
             value: ${THOTH_S3_ENDPOINT_URL}
           - name: SELINON_DISPATCHER
             value: ${SELINON_DISPATCHER}
+          - name: THOTH_LOG_WORKER
+            value: INFO
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                name: thoth
+                key: sentry-dsn
           - name: BROKER_URL
             valueFrom:
               configMapKeyRef:
