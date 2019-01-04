@@ -21,5 +21,11 @@ __name__ = "thoth.worker"
 __version__ = "0.0.2"
 __author__ = "Fridolin Pokorny"
 
+from thoth.common import init_logging
+
 from .utils import get_config_files
 from .utils import init
+
+
+# Init logging so we get errors reported.
+init_logging()
