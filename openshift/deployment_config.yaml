@@ -23,6 +23,8 @@ objects:
       app: selinon
       component: worker
     name: ${WORKER_NAME}
+  strategy:
+    type: Recreate
   spec:
     replicas: 2
     template:
