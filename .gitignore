@@ -1,1 +1,3 @@
 fig/
+dist/
+thoth_worker.egg-info/
