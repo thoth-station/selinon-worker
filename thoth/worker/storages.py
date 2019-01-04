@@ -18,6 +18,8 @@
 """Storage adapters for Thoth worker."""
 
 import os
+import collections
+import typing
 
 from thoth.storages.ceph import CephStore
 from thoth.storages.exceptions import NotFoundError as CephNotFound
@@ -233,3 +235,24 @@ class AggregatedKeywordsStore(KeywordsStoreBase):
     """Store keywords that are aggregated from different keywords sources."""
 
     _DOCUMENT_ID = "keywords_aggregated.json"
+
+
+class PerformanceMaskStore(KeywordsStoreBase):
+    """Persisting performance mask."""
+
+    _DOCUMENT_ID = "performance_mask.json"
+
+    def retrieve_mask(self) -> typing.List[int]:
+        """Retrieve performance mask."""
+        document = self.retrieve_performance_mask_document()
+        # We always use ordered mask based on keys.
+        ordered_document = collections.OrderedDict(sorted(document.items()))
+        return [value for value in ordered_document.values()]
+
+    def retrieve_performance_mask_document(self) -> dict:
+        """Retrieve performance mask document as stored on Ceph."""
+        return self.ceph.retrieve_document(self._DOCUMENT_ID)
+
+    def store_performance_mask_document(self, document) -> None:
+        """Store performance mask document onto Ceph."""
+        self.ceph.store_document(document, self._DOCUMENT_ID)
