@@ -18,7 +18,7 @@
 """Selinon worker for Thoth to perform data aggregation and analysis for high volume data (parallel processing)."""
 
 __name__ = "thoth.worker"
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Fridolin Pokorny"
 
 from .utils import get_config_files
