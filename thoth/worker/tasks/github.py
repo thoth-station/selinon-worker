@@ -17,6 +17,7 @@
 
 """Tasks related to PyPI."""
 
+import os
 import logging
 from urllib.parse import urlparse
 from collections import OrderedDict
@@ -140,12 +141,26 @@ class RetrieveGitHubInfoTask(_GitHubTaskBase):
         "https://api.github.com/repos/{project}/{repo}/topics"
     )
 
+    _GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+
+    def requests(self, url):
+        """Perform request to GitHub API, adjust headers and token (if configured so)."""
+        if self._GITHUB_TOKEN:
+            headers = dict(**self._HEADERS, Authorization=f'token {self._GITHUB_TOKEN}')
+        else:
+            _LOGGER.warning("No GitHub token configured, API requests will be throttled")
+            headers = self._HEADERS
+
+        response = requests.get(url, headers=headers)
+        return response
+
     def run(self, node_args: dict) -> dict:
         """Aggregate information for a Python package based on URL stated in the project info on PyPI."""
         project, repo = self.get_project_repo_github(node_args["package_name"])
 
         # Topics gathering.
-        response = requests.get(self._GITHUB_TOPICS_URL.format(project=project, repo=repo), headers=self._HEADERS)
+        response = self.requests(self._GITHUB_TOPICS_URL.format(project=project, repo=repo))
+        response.raise_for_status()
         topics = response.json()["names"]
 
         return {
