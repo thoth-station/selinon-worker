@@ -136,6 +136,42 @@ class ReadmeStore(CephWorkerStorageBase):
         document = {"result": result, "@meta": {"datetime": datetime_str()}}
         return self.ceph.store_document(document, self._get_object_key(project_name))
 
+# TODO: make more generic with README store
+
+class GitHubInfoStore(CephWorkerStorageBase):
+    """Store project information from GitHub."""
+
+    def retrieve(self, flow_name, task_name, task_id):
+        # We use project name for naming files so this method cannot be used, but is required by Selinon.
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_object_key(project_name: str) -> str:
+        """Get object key under"""
+        return os.path.join("github", project_name)
+
+    def retrieve_project_readme(self, project_name: str) -> dict:
+        """Retrieve a project GitHub info."""
+        try:
+            return self.ceph.retrieve_document(self._get_object_key(project_name))
+        except CephNotFound as exc:
+            raise NotFoundException(
+                f"No GitHub info for project {project_name} not found"
+            ) from exc
+
+    def store(
+        self,
+        node_args: dict,
+        flow_name: str,
+        task_name: str,
+        task_id: str,
+        result: dict,
+    ) -> dict:
+        """Store the given readme file for the given project."""
+        project_name = node_args["package_name"]
+        document = {"result": result, "@meta": {"datetime": datetime_str()}}
+        return self.ceph.store_document(document, self._get_object_key(project_name))
+
 
 class Project2VecModelStore(CephWorkerStorageBase):
     """Storing the resulting project2vec vector space model."""

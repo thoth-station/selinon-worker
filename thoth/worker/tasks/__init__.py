@@ -32,7 +32,9 @@ from .project2vec import Project2VecCreationTask
 from .project2vec import Project2VecTask
 from .pypi import ProjectInfoTask
 from .pypi import PyPIListingTask
-from .pypi import RetrieveProjectReadmeTask
+from .github import RetrieveProjectReadmeTask
+from .github import RetrieveGitHubInfoTask
 from .sync import GraphSyncAnalysisTask
 from .sync import GraphSyncSolverTask
 from .sync import SyncListingTask
+

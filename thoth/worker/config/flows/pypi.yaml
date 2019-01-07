@@ -19,19 +19,3 @@
       edges:
         - from:
           to: ProjectInfoTask
-
-    - name: readme_file
-      queue: readme_file_flow
-      edges:
-        - from:
-          to: RetrieveProjectReadmeTask
-
-    - name: project_readme_files
-      queue: project_readme_files_flow
-      edges:
-        - from:
-          to: readme_file
-          foreach:
-            function: iter_pypi_projects_ceph
-            import: thoth.worker.foreach
-            propagate_result: true

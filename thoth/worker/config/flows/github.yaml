@@ -1,0 +1,40 @@
+---
+  flow-definitions:
+    #
+    # README file
+    #
+    - name: readme_file
+      queue: readme_file_flow
+      edges:
+        - from:
+          to: RetrieveProjectReadmeTask
+
+    - name: project_readme_files
+      queue: project_readme_files_flow
+      edges:
+        - from:
+          to: readme_file
+          foreach:
+            function: iter_pypi_projects_ceph
+            import: thoth.worker.foreach
+            propagate_result: true
+
+
+    #
+    # GitHub topics.
+    #
+    - name: project_github_info
+      queue: project_github_info_flow
+      edges:
+        - from:
+          to: github_info
+          foreach:
+            function: iter_pypi_projects_ceph
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: github_info
+      queue: github_info_flow
+      edges:
+        - from:
+          to: RetrieveGitHubInfoTask
