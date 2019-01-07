@@ -48,6 +48,8 @@ objects:
             value: ${SELINON_DISPATCHER}
           - name: THOTH_LOG_WORKER
             value: INFO
+          - name: GITHUB_TOKEN
+            value: ${GITHUB_TOKEN}
           - name: SENTRY_DSN
             valueFrom:
               secretKeyRef:
@@ -121,3 +123,8 @@ parameters:
   displayName: S3 endpoint
   required: true
   name: THOTH_S3_ENDPOINT_URL
+
+- description: GitHub token for using GitHub API.
+  displayName: GitHub token
+  required: false
+  name: GITHUB_TOKEN
