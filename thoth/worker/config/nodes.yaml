@@ -72,6 +72,12 @@
       max_retry: 0
       storage: Project2VecModelStore
 
+    - name: RetrieveGitHubInfoTask
+      queue: github_project_info_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: GitHubInfoStore
+
   flows:
     # Sync results of solvers and package-extract (used for debug and benchmarks).
     - sync_flow
@@ -96,6 +102,12 @@
     # Create a single vector for a project - there are reused keywords from keywords flow
     #   args: {"project_name": "thoth-worker"}
     - project2vec_single
+    # Aggregate GitHub's info for a single PyPI project
+    #   args: {"project_name": "thoth-worker"}
+    - github_info
+    # Aggregate GitHub info for all PyPI projects, info is aggregated based on project home page URL (github).
+    #   args: None
+    - project_github_info
     # All flows prefixed by underscore are "internal" temporary flows and should not be called by a user.
     - _pypi_keywords_flow
     - __pypi_keywords_flow
@@ -168,6 +180,11 @@
         <<: *ceph_configuration
 
     - name: ReadmeStore
+      import: thoth.worker.storages
+      configuration:
+        <<: *ceph_configuration
+
+    - name: GitHubInfoStore
       import: thoth.worker.storages
       configuration:
         <<: *ceph_configuration
