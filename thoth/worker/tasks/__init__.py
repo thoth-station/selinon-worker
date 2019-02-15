@@ -37,4 +37,8 @@ from .github import RetrieveGitHubInfoTask
 from .sync import GraphSyncAnalysisTask
 from .sync import GraphSyncSolverTask
 from .sync import SyncListingTask
-
+from .travis import TravisActiveRepos
+from .travis import TravisLogTxt
+from .travis import TravisRepoBuilds
+from .travis import TravisRepoBuildsCount
+from .travis import TravisLogCleanup
