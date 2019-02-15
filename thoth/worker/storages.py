@@ -296,7 +296,7 @@ class PerformanceMaskStore(KeywordsStoreBase):
 
 class TravisLogsStorage(CephWorkerStorageBase):
     def store(self, node_args, flow_name, task_name, task_id, result):
-        object_key = 'travis/logs/{org}/{repo}/2/{build}.json'.format(
+        object_key = '{org}/{repo}/{build}.json'.format(
             org=node_args['organization'],
             repo=node_args['repo'],
             build=node_args['build']
