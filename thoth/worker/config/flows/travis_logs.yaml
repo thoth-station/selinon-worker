@@ -60,5 +60,5 @@
       edges:
         - from:
           to: TravisLogTxt
-        - from: TravisLogTxt
-          to: TravisLogCleanup
+        #- from: TravisLogTxt
+        #  to: TravisLogCleanup

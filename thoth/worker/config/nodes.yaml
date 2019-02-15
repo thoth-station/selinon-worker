@@ -94,7 +94,7 @@
       queue: travis_log_txt_task
       import: thoth.worker.tasks
       max_retry: 0
-      storage: Redis
+      storage: TravisLogsStorage
 
     - name: TravisRepoBuildsCount
       queue: travis_repo_builds_count_task
