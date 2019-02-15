@@ -292,3 +292,18 @@ class PerformanceMaskStore(KeywordsStoreBase):
     def store_performance_mask_document(self, document) -> None:
         """Store performance mask document onto Ceph."""
         self.ceph.store_document(document, self._DOCUMENT_ID)
+
+
+class TravisLogsStorage(CephWorkerStorageBase):
+    def store(self, node_args, flow_name, task_name, task_id, result):
+        object_key = 'travis/logs/{org}/{repo}/2/{build}.json'.format(
+            org=node_args['organization'],
+            repo=node_args['repo'],
+            build=node_args['build']
+        )
+        self.ceph.store_document(result, object_key)
+        return object_key
+
+    def retrieve(self, flow_name, task_name, task_id):  # noqa
+        # TODO: implement
+        raise NotImplementedError

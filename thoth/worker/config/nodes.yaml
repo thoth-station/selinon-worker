@@ -78,6 +78,36 @@
       max_retry: 0
       storage: GitHubInfoStore
 
+    - name: TravisActiveRepos
+      queue: travis_active_repos_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: Redis
+
+    - name: TravisRepoBuilds
+      queue: travis_repo_builds_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: Redis
+
+    - name: TravisLogTxt
+      queue: travis_log_txt_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: Redis
+
+    - name: TravisRepoBuildsCount
+      queue: travis_repo_builds_count_task
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: Redis
+
+    - name: TravisLogCleanup
+      queue: travis_log_cleanup
+      import: thoth.worker.tasks
+      max_retry: 0
+      storage: TravisLogsStorage
+
   flows:
     # Sync results of solvers and package-extract (used for debug and benchmarks).
     - sync_flow
@@ -113,6 +143,15 @@
     - __pypi_keywords_flow
     - _do_sync_flow
     - _project2vec
+    - _travis_repo_builds
+    # Aggregate all the logs for the given organization/repo.
+    #   args: {"organization": "selinon", "repo": "selinon, "token": "<your travis CI token>"}
+    - travis_repo_logs
+    # Aggregate all the logs for the given organization - for all the registered repositories
+    # for that organization in Travis CI.
+    #   args: {"organization": "selinon", "token": "<your travis CI token>"}
+    - travis_org_logs
+    - travis_build_logs
 
   storages:
     # Redis adapters are used for temporary results.
@@ -188,6 +227,12 @@
       import: thoth.worker.storages
       configuration:
         <<: *ceph_configuration
+
+    - name: TravisLogsStorage
+      import: thoth.worker.storages
+      configuration:
+        <<: *ceph_configuration
+        prefix: '{THOTH_CEPH_BUCKET_PREFIX}travis-logs/'
 
   global:
     trace:

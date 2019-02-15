@@ -1,0 +1,64 @@
+---
+  flow-definitions:
+    - name: travis_org_logs
+      queue: travis_org_logs
+      nowait: travis_repo_logs
+      sampling:
+        name: constant
+        args:
+          retry: 2
+      edges:
+        - from:
+          to: TravisActiveRepos
+        - from: TravisActiveRepos
+          to: travis_repo_logs
+          foreach:
+            function: iter_travis_repos
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: travis_repo_logs
+      queue: travis_repo_logs
+      nowait: _travis_repo_builds
+      sampling:
+        name: constant
+        args:
+          retry: 2
+      edges:
+        - from:
+          to: TravisRepoBuildsCount
+        - from: TravisRepoBuildsCount
+          to: _travis_repo_builds
+          foreach:
+            function: iter_travis_builds_count
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: _travis_repo_builds
+      queue: travis_repo_builds
+      nowait: travis_build_logs
+      sampling:
+        name: constant
+        args:
+          retry: 2
+      edges:
+        - from:
+          to: TravisRepoBuilds
+        - from: TravisRepoBuilds
+          to: travis_build_logs
+          foreach:
+            function: iter_travis_builds
+            import: thoth.worker.foreach
+            propagate_result: true
+
+    - name: travis_build_logs
+      queue: travis_build_logs
+      sampling:
+        name: constant
+        args:
+          retry: 2
+      edges:
+        - from:
+          to: TravisLogTxt
+        - from: TravisLogTxt
+          to: TravisLogCleanup
