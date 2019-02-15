@@ -26,6 +26,7 @@ setup(
     packages=[
         'thoth.worker',
         'thoth.worker.tasks',
+        'thoth.worker.foreach',
     ],
     package_data={
         'thoth.worker': [
