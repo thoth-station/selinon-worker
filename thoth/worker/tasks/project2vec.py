@@ -21,7 +21,6 @@ import typing
 import itertools
 import logging
 
-from nltk import word_tokenize
 from selinon import SelinonTask
 from selinon import StoragePool
 from selinon.errors import NoParentNodeError
@@ -74,6 +73,7 @@ class Project2VecTask(SelinonTask):
 
     def run(self, node_args: dict) -> dict:
         """Compute a single vector for project2vec for the given project."""
+        from nltk import word_tokenize
         package_name = node_args["package_name"]
 
         keywords = self.get_keywords()
