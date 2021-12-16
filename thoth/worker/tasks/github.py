@@ -75,7 +75,7 @@ class RetrieveProjectReadmeTask(_GitHubTaskBase):
     """Retrieve README file from GitHub/GitLab if available."""
 
     _GITHUB_README_PATH = (
-        "https://raw.githubusercontent.com/{project}/{repo}/master/README{extension}"
+        "https://raw.githubusercontent.com/{project}/{repo}/{branch}/README{extension}"
     )
 
     # Based on https://github.com/github/markup#markups
@@ -106,27 +106,41 @@ class RetrieveProjectReadmeTask(_GitHubTaskBase):
                 if extension:
                     extension = "." + extension
                 url = self._GITHUB_README_PATH.format(
-                    project=project, repo=repo, extension=extension
+                    project=project, repo=repo, extension=extension, branch="master",
                 )
                 response = requests.get(url)
-                if response.status_code != 200:
+                if response.status_code == 200:
                     _LOGGER.debug(
-                        'No README%s found for type "%s" at "%s"',
-                        extension,
-                        readme_type,
-                        url,
+                        'README%s found (master branch) for type "%s" at "%s"', extension, readme_type, url
                     )
-                    continue
+                    return {
+                        "type": readme_type,
+                        "content": response.text,
+                        "package_name": node_args["package_name"],
+                        "url": url,
+                    }
+
+                url = self._GITHUB_README_PATH.format(
+                    project=project, repo=repo, extension=extension, branch="main",
+                )
+                response = requests.get(url)
+                if response.status_code == 200:
+                    _LOGGER.debug(
+                        'README%s found (master main) for type "%s" at "%s"', extension, readme_type, url
+                    )
+                    return {
+                        "type": readme_type,
+                        "content": response.text,
+                        "package_name": node_args["package_name"],
+                        "url": url,
+                    }
 
                 _LOGGER.debug(
-                    'README%s found for type "%s" at "%s"', extension, readme_type, url
+                    'No README%s found for type "%s" at "%s"',
+                    extension,
+                    readme_type,
+                    url,
                 )
-                return {
-                    "type": readme_type,
-                    "content": response.text,
-                    "package_name": node_args["package_name"],
-                    "url": url,
-                }
 
 
 class RetrieveGitHubInfoTask(_GitHubTaskBase):
