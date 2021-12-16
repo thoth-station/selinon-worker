@@ -21,6 +21,7 @@ import os
 import logging
 from urllib.parse import urlparse
 from collections import OrderedDict
+from requests.api import head
 
 from selinon import SelinonTask
 from selinon import StoragePool
@@ -28,44 +29,41 @@ from selinon import FatalTaskError
 
 import requests
 from thoth.python import Source
+import yaml
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
 
 PYPI = Source(url="https://pypi.org/simple")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+_PRESCRIPTIONS_BASE_URL = "https://raw.githubusercontent.com/thoth-station/prescriptions/master/prescriptions/"
 
 
 class _GitHubTaskBase(SelinonTask):
     """A base class for GitHub related routines."""
 
     def get_project_repo_github(self, package_name: str):
-        """Get project and repo for the given package based on aggregated package info from PyPI."""
-        project_info_store = StoragePool.get_connected_storage("ProjectInfoStore")
+        """Get project and repo for the given package based on aggregated package info from Thoth's Prescriptions."""
+        package_prefix = package_name[:2] + "_"
+        headers = {"Authorization": GITHUB_TOKEN}
 
-        home_page = (
-            project_info_store.retrieve_project_info(package_name)
-            .get("info", {})
-            .get("home_page")
+        gh_link_yaml = requests.get(
+            os.path.join(
+                _PRESCRIPTIONS_BASE_URL, package_prefix, package_name, "gh_link.yaml"
+            ),
+            headers=headers,
         )
-        if not home_page:
-            raise FatalTaskError(f"No home page found for project {package_name!r}")
 
-        home_page = urlparse(home_page)
-        if home_page.netloc != "github.com":
-            raise FatalTaskError(
-                f"No GitHub home page associated for project {package_name!r}"
+        if gh_link_yaml.status_code != 200:
+            _LOGGER.debug(
+                f"{gh_link_yaml.status_code}: Cannot access prescription YAML file"
             )
 
-        path_parts = home_page.path.split("/")
-        if len(path_parts) < 3:
-            # 3 because of leading slash
-            raise FatalTaskError(
-                f"Unable to parse GitHub organization and repo for project {package_name!r}"
-            )
+        yaml_file = yaml.safe_load(gh_link_yaml)
+        repo_link = yaml_file["units"]["wraps"][0]["run"]["justification"][0]["link"]
 
-        project, repo = path_parts[1], path_parts[2]
-        return project, repo
+        return package_name, repo_link
 
     def run(self, node_args: dict) -> dict:
         raise NotImplementedError
@@ -133,22 +131,22 @@ class RetrieveGitHubInfoTask(_GitHubTaskBase):
     """Aggregate GitHub information for a Python package."""
 
     _HEADERS = {
-        'Accept': 'application/vnd.github.mercy-preview+json, '  # for topics
-                  'application/vnd.github.v3+json'  # recommended by GitHub for License API
+        "Accept": "application/vnd.github.mercy-preview+json, "  # for topics
+        "application/vnd.github.v3+json"  # recommended by GitHub for License API
     }
 
-    _GITHUB_TOPICS_URL = (
-        "https://api.github.com/repos/{project}/{repo}/topics"
-    )
+    _GITHUB_TOPICS_URL = "https://api.github.com/repos/{project}/{repo}/topics"
 
-    _GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+    _GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
     def requests(self, url):
         """Perform request to GitHub API, adjust headers and token (if configured so)."""
         if self._GITHUB_TOKEN:
-            headers = dict(**self._HEADERS, Authorization=f'token {self._GITHUB_TOKEN}')
+            headers = dict(**self._HEADERS, Authorization=f"token {self._GITHUB_TOKEN}")
         else:
-            _LOGGER.warning("No GitHub token configured, API requests will be throttled")
+            _LOGGER.warning(
+                "No GitHub token configured, API requests will be throttled"
+            )
             headers = self._HEADERS
 
         response = requests.get(url, headers=headers)
@@ -159,10 +157,10 @@ class RetrieveGitHubInfoTask(_GitHubTaskBase):
         project, repo = self.get_project_repo_github(node_args["package_name"])
 
         # Topics gathering.
-        response = self.requests(self._GITHUB_TOPICS_URL.format(project=project, repo=repo))
+        response = self.requests(
+            self._GITHUB_TOPICS_URL.format(project=project, repo=repo)
+        )
         response.raise_for_status()
         topics = response.json()["names"]
 
-        return {
-            "topics": topics
-        }
+        return {"topics": topics}
