@@ -17,17 +17,11 @@
 
 """Tasks related to PyPI."""
 
-import os
-import logging
-from urllib.parse import urlparse
 from collections import OrderedDict
-from requests.api import head
-
-from selinon import SelinonTask
-from selinon import StoragePool
-from selinon import FatalTaskError
-
+import logging
+import os
 import requests
+from selinon import SelinonTask
 from thoth.python import Source
 import yaml
 
@@ -47,20 +41,45 @@ class _GitHubTaskBase(SelinonTask):
         """Get project and repo for the given package based on aggregated package info from Thoth's Prescriptions."""
         package_prefix = package_name[:2] + "_"
         headers = {"Authorization": GITHUB_TOKEN}
-
-        gh_link_yaml = requests.get(
-            os.path.join(
-                _PRESCRIPTIONS_BASE_URL, package_prefix, package_name, "gh_link.yaml"
-            ),
-            headers=headers,
+        prescription_link = os.path.join(
+            _PRESCRIPTIONS_BASE_URL, package_prefix, package_name, "gh_link.yaml"
         )
+
+        gh_link_yaml = requests.get(prescription_link, headers=headers)
 
         if gh_link_yaml.status_code != 200:
             _LOGGER.debug(
-                f"{gh_link_yaml.status_code}: Cannot access prescription YAML file"
+                f"Request status code {gh_link_yaml.status_code}: Cannot access prescription YAML file at {prescription_link}"
+            )
+            package_prefix_alternatives = [
+                package_name[:1] + "_",
+                package_name[:3] + "_",
+            ]
+            valid_status_code = False
+
+            for prefix in package_prefix_alternatives:
+                prescription_link = os.path.join(
+                    _PRESCRIPTIONS_BASE_URL, prefix, package_name, "gh_link.yaml"
+                )
+                gh_link_yaml = requests.get(
+                    prescription_link,
+                    headers=headers,
+                )
+
+                if gh_link_yaml.status_code != 200:
+                    _LOGGER.debug(
+                        f"Request status code {gh_link_yaml.status_code}: Cannot access prescription YAML file at {prescription_link}"
+                    )
+                else:
+                    valid_status_code = True
+                    break
+
+        if not valid_status_code:
+            raise Exception(
+                "Cannot access prescription YAML file URL: invalid status code"
             )
 
-        yaml_file = yaml.safe_load(gh_link_yaml)
+        yaml_file = yaml.safe_load(gh_link_yaml.text)
         repo_link = yaml_file["units"]["wraps"][0]["run"]["justification"][0]["link"]
 
         return package_name, repo_link
