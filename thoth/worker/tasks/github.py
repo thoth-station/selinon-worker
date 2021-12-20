@@ -39,11 +39,17 @@ class _GitHubTaskBase(SelinonTask):
 
     def get_project_repo_github(self, package_name: str):
         """Get project and repo for the given package based on aggregated package info from Thoth's Prescriptions."""
-        package_prefix = package_name[:2] + "_"
         headers = {"Authorization": GITHUB_TOKEN}
-        prescription_link = os.path.join(
-            _PRESCRIPTIONS_BASE_URL, package_prefix, package_name, "gh_link.yaml"
-        )
+
+        if len(package_name) <= 2:
+            prescription_link = os.path.join(
+                _PRESCRIPTIONS_BASE_URL, package_name, "gh_link.yaml"
+            )
+        else:
+            package_prefix = package_name[:2] + "_"
+            prescription_link = os.path.join(
+                _PRESCRIPTIONS_BASE_URL, package_prefix, package_name, "gh_link.yaml"
+            )
 
         gh_link_yaml = requests.get(prescription_link, headers=headers)
 
@@ -51,32 +57,8 @@ class _GitHubTaskBase(SelinonTask):
             _LOGGER.debug(
                 f"Request status code {gh_link_yaml.status_code}: Cannot access prescription YAML file at {prescription_link}"
             )
-            package_prefix_alternatives = [
-                package_name[:1] + "_",
-                package_name[:3] + "_",
-            ]
-            valid_status_code = False
-
-            for prefix in package_prefix_alternatives:
-                prescription_link = os.path.join(
-                    _PRESCRIPTIONS_BASE_URL, prefix, package_name, "gh_link.yaml"
-                )
-                gh_link_yaml = requests.get(
-                    prescription_link,
-                    headers=headers,
-                )
-
-                if gh_link_yaml.status_code != 200:
-                    _LOGGER.debug(
-                        f"Request status code {gh_link_yaml.status_code}: Cannot access prescription YAML file at {prescription_link}"
-                    )
-                else:
-                    valid_status_code = True
-                    break
-
-        if not valid_status_code:
             raise Exception(
-                "Cannot access prescription YAML file URL: invalid status code"
+                f"Cannot access prescription YAML file via {prescription_link}: invalid status code"
             )
 
         yaml_file = yaml.safe_load(gh_link_yaml.text)
