@@ -4,14 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-selinon = "*"
-redis = "*"
+selinon = {extras = ["celery", "redis"], version = "*", git = "https://github.com/fridex/selinon@redis-no-password-fix"}
 thoth-storages = "*"
 thoth-python = "*"
 requests = "*"
 xmltodict = "*"
 thoth-common = "*"
 nltk = "*"
+celery = "<5"
 
 [dev-packages]
 
